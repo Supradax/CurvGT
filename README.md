@@ -64,7 +64,7 @@ The following parameters can be used when running the script:
 ### Further Illustration of Geometry Processed Documents
 ---
 Documents unmentioned here are not lerveraged in our implementation. 
-- `GaussianCurvature.pt`: Each node is assigned with a scalar, standing for the Gaussian curvature estimate down there. We leverage a mask (`option_mask.pt`) to decide the correct parallel transport (Euclidean, sphereic and hyperbolic). Thus three types of parallel transport are runned simultaneously and one can further optimize this to accelerate.  
+- `GaussianCurvature.pt`: Each node is assigned with a scalar, standing for the Gaussian curvature estimate down there. We leverage a mask (`option_mask.pt`) to decide the correct parallel transport (Euclidean, spheric and hyperbolic). Thus three types of parallel transport are runned simultaneously and one can further optimize this to accelerate.  
 - `H2frame.pt` and `HyperPT.pt`: Edge-wise parameters to support parallel transport on embedding hyperbloic spaces.
 - `edge_attr.pt`: Edge-wise  parameters to support parallel transport on embedding spherical spaces.
 - `gradMatrix.pt`: the discrete gradient operator.
