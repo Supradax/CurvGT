@@ -55,3 +55,14 @@ The following parameters can be used when running the script:
     - `0`: Standard testing pattern
     - `1`: Standard training pattern
   - **Default**: 0
+
+### Further Illustration of Geometry Processed Documents
+---
+Documents unmentioned here are not lerveraged in our implementation. 
+- `GaussianCurvature.pt`: Each node is assigned with a scalar, standing for the Gaussian curvature estimate down there. We leverage a mask (`option_mask.pt`) to decide the correct parallel transport (Euclidean, sphereic and hyperbolic). Thus three types of parallel transport are runned simultaneously and one can further optimize this to accelerate.  
+- `H2frame.pt` and `HyperPT.pt`: Edge-wise parameters to support parallel transport on embedding hyperbloic spaces.
+- `edge_attr.pt`: Edge-wise  parameters to support parallel transport on embedding spherical spaces.
+- `PD.pt`:
+- `gradMatrix.pt`: the discrete gradient operator.
+- `mass.pt`: the surface area that a point takes up.
+- `vec_normal.pt`, `PD.pt`: the normal vector field and principal directions at each node. The latter forms a local coordinate frame. Parallel transport should be computed based on concrete frames while feature updates are frame-independent (they are scalar).
