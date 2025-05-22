@@ -4,6 +4,11 @@ Deep models have recently achieved remarkable performances in solving partial di
 
 [Curvature-aware Graph Attention for PDEs on Manifold[paper]](https://openreview.net/forum?id=vWYLQ0VPJx&noteId=vWYLQ0VPJx)
 
+You can cite our paper by (.bibtex): 
+`
+Not available yet.
+`
+
 ### Requirements
 ---
 The code doesn't need any extra dependency except for popular libraries like pytorch,numpy and some python standard libraries.
