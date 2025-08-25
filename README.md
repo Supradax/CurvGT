@@ -5,9 +5,16 @@ Deep models have recently achieved remarkable performances in solving partial di
 [Curvature-aware Graph Attention for PDEs on Manifold[paper]](https://openreview.net/forum?id=vWYLQ0VPJx&noteId=vWYLQ0VPJx)
 
 You can cite our paper by (.bibtex): 
-`
-Not available yet.
-`
+```
+@inproceedings{
+liao2025curvatureaware,
+title={Curvature-aware Graph Attention for {PDE}s on Manifolds},
+author={Yunfeng Liao and Jiawen Guan and Xiucheng Li},
+booktitle={Forty-second International Conference on Machine Learning},
+year={2025},
+url={https://openreview.net/forum?id=vWYLQ0VPJx}
+}
+```
 
 ### Requirements
 ---
@@ -64,9 +71,15 @@ The following parameters can be used when running the script:
 ### Further Illustration of Geometry Processed Documents
 ---
 Documents unmentioned here are not lerveraged in our implementation. 
-- `GaussianCurvature.pt`: Each node is assigned with a scalar, standing for the Gaussian curvature estimate down there. We leverage a mask (`option_mask.pt`) to decide the correct parallel transport (Euclidean, spheric and hyperbolic). Thus three types of parallel transport are runned simultaneously and one can further optimize this to accelerate.  
-- `H2frame.pt` and `HyperPT.pt`: Edge-wise parameters to support parallel transport on embedding hyperbloic spaces.
-- `edge_attr.pt`: Edge-wise  parameters to support parallel transport on embedding spherical spaces.
-- `gradMatrix.pt`: the discrete gradient operator.
+- `GaussianCurvature.pt`: Each node is assigned with a scalar, standing for the Gaussian curvature estimate down there. We leverage a mask (`option_mask.pt`) to decide the correct parallel transport (Euclidean, spheric and hyperbolic). Thus three types of parallel transport are runned simultaneously and one can further optimize this to accelerate. To fetch these curvature estimates $\kappa$, we use an excellent open geometry process C++ library `libigl` where these estimates along with the principal direction of curvature are also available. Only mesh documents in common formats `.obj`, `.off` etc are needed. Then the `option_mask` flags the type of space embedded in: `+1` for $\kappa>\varepsilon$ (spheric), `-1` for $\kappa < -\varepsilon$ (hyperbolic) and otherwise `0` for Euclidean.
+
+- `H2frame.pt` and `HyperPT.pt`: Edge-wise parameters to support parallel transport on embedding hyperbloic spaces. The concrete formulae can be found in the paper and the appendix. We mention that `H2frame.pt` contain two 3D vectors at each point with positive and negative principal curvature respectively, which can also be obtained in `libigl`. `HyperPt.pt` involves the works to compute the parallel transport on $\mathbb H^2$ as mentioned in the paper. For each vertex $v$, we place it on $(0,1)$ in $\mathbb H^2$ and note that two coordinate-axes are exactly two principal directions. This observation guides us how to place $v$'s neighbors around $v$ on $\mathbb H^2$. In the sense of isometric geodesic embedding, assume two vertices $u$ and $v$ are with 3D coordinates $\mathbf x_u$ and $\mathbf x_v$, then we project $\mathbf x_v-\mathbf x_u$ back to the estimated tangent plane $T_u\mathcal M$ at $\mathbf x_u$. This tangent plane can be estimated by various ways, the most famous and simple one is via PCA(Principle Component Anaysis). Then this projected tangent vector on $\mathcal M$(or more exactly, the pseudo sphere) can be mapped to the tangent vector in $\mathbb H^2$, denoted by $\mathbf p$. With exponential map in $\mathbb H^2$, one can find a unique geodesic starting at $(0,1)$ with velocity $\mathbf p$. Consequently, the neighbor falls on this geodesic (either a line parallel to $y$-axis or a semicircle centered at the $x$-axis). We choose the one such that the hyperbolic distance equaling their Euclidean counterpart $||\mathbf x_u-\mathbf{x}_v||_2^2$. 
+   
+- `edge_attr.pt`: Edge-wise parameters to support parallel transport on embedding spherical spaces. The sphere case is similar to the hyperbolic one. One can get them by serveral steps: (i) find the tangent plane; (ii) estimate the tangent vector via projection; (iii) find the geodesic begining at this point with the direction along this tangent vector; (iv) determine the exact point on this geodesic such that the spherical distance equals the Euclidean counterpart.
+
+The following ones can be gained easily by simpily calling APIs offered by `libigl`:
+- `gradMatrix.pt`: the discrete gradient operator. 
 - `mass.pt`: the surface area that a point takes up.
 - `vec_normal.pt`, `PD.pt`: the normal vector field and principal directions at each node. The latter forms a local coordinate frame. Parallel transport should be computed based on concrete frames while feature updates are frame-independent (they are scalar).
+
+**More Implementation Details**. We use principal directions as a coordinate chart on the surface. It may degenerate sometimes when the curvature tensor is isotropic (e.g., a sphere). But in most cases, these irregular points are rare and can be fixed via interpolations with the neighbors. Each time we compute message passing on surfaces, we project the 3D vectors onto the 2D tangent planes embedded in $\mathbb R^3$, whose these 2D coordinate components are served as inputs and outputs of the network, and transform them back to 3D ones if necessary. This approach makes the entire process working on the embedded manifold, which is independent of the 3D space it embeds in.
